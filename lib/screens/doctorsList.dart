@@ -1,8 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:health_and_doctor_appointment/firestore-data/searchList.dart';
 
 class DoctorsList extends StatefulWidget {
   @override
@@ -11,14 +8,20 @@ class DoctorsList extends StatefulWidget {
 
 class _DoctorsListState extends State<DoctorsList> {
   TextEditingController _textController = new TextEditingController();
-  String search;
+  String? search;
   var _length = 0;
+  List<String> doctors = [
+    "Dr. Smith",
+    "Dr. Johnson",
+    "Dr. Williams",
+    "Dr. Brown"
+  ];
 
   @override
   void initState() {
     super.initState();
     search = _textController.text;
-    _length = search.length;
+    _length = search!.length;
   }
 
   @override
@@ -29,6 +32,10 @@ class _DoctorsListState extends State<DoctorsList> {
 
   @override
   Widget build(BuildContext context) {
+    List<String> filteredDoctors = doctors
+        .where((doctor) => doctor.toLowerCase().contains(search!.toLowerCase()))
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -56,18 +63,19 @@ class _DoctorsListState extends State<DoctorsList> {
                     fontWeight: FontWeight.w800,
                   ),
                   prefixIcon: Icon(
-                    FlutterIcons.search1_ant,
+                    Icons.search,
                     size: 20,
                   ),
                   prefixStyle: TextStyle(
                     color: Colors.grey[300],
                   ),
-                  suffixIcon: _textController.text.length != 0
+                  suffixIcon: _textController.text.isNotEmpty
                       ? TextButton(
                           onPressed: () {
                             setState(() {
                               _textController.clear();
-                              _length = search.length;
+                              search = '';
+                              _length = search!.length;
                             });
                           },
                           child: Icon(
@@ -77,20 +85,11 @@ class _DoctorsListState extends State<DoctorsList> {
                         )
                       : SizedBox(),
                 ),
-                // onFieldSubmitted: (String _searchKey) {
-                //   setState(
-                //     () {
-                //       print('>>>' + _searchKey);
-                //       search = _searchKey;
-                //     },
-                //   );
-                // },
                 onChanged: (String _searchKey) {
                   setState(
                     () {
-                      print('>>>' + _searchKey);
                       search = _searchKey;
-                      _length = search.length;
+                      _length = search!.length;
                     },
                   );
                 },
@@ -132,8 +131,13 @@ class _DoctorsListState extends State<DoctorsList> {
                   ),
                 ),
               )
-            : SearchList(
-                searchKey: search,
+            : ListView.builder(
+                itemCount: filteredDoctors.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(filteredDoctors[index]),
+                  );
+                },
               ),
       ),
     );

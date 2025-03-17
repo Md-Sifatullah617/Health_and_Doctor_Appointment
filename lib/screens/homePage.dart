@@ -1,17 +1,12 @@
-import 'dart:async';
-import 'dart:ui';
-import 'package:flutter/painting.dart';
-import 'package:health_and_doctor_appointment/firestore-data/notificationList.dart';
-import 'package:health_and_doctor_appointment/model/cardModel.dart';
-import 'package:health_and_doctor_appointment/carouselSlider.dart';
-import 'package:health_and_doctor_appointment/screens/exploreList.dart';
-import 'package:health_and_doctor_appointment/firestore-data/searchList.dart';
-import 'package:health_and_doctor_appointment/firestore-data/topRatedList.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+import 'package:health_and_doctor_appointment/carouselSlider.dart';
+import 'package:health_and_doctor_appointment/firestore-data/notificationList.dart';
+import 'package:health_and_doctor_appointment/firestore-data/searchList.dart';
+import 'package:health_and_doctor_appointment/firestore-data/topRatedList.dart';
+import 'package:health_and_doctor_appointment/model/cardModel.dart';
+import 'package:health_and_doctor_appointment/screens/exploreList.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,22 +16,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController _doctorName = TextEditingController();
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
+  // Removed FirebaseAuth and User
+  // FirebaseAuth _auth = FirebaseAuth.instance;
+  // User? user;
 
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
-  }
+  // Removed _getUser and _signOut methods
+  // Future<void> _getUser() async {
+  //   user = _auth.currentUser;
+  // }
 
-  Future _signOut() async {
-    await _auth.signOut();
-  }
+  // Future<void> _signOut() async {
+  //   await _auth.signOut();
+  // }
 
   @override
   void initState() {
     super.initState();
-    _getUser();
-    _doctorName = new TextEditingController();
+    // Removed _getUser call
+    _doctorName = TextEditingController();
   }
 
   @override
@@ -47,7 +44,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    String _message;
+    String _message = '';
     DateTime now = DateTime.now();
     String _currentHour = DateFormat('kk').format(now);
     int hour = int.parse(_currentHour);
@@ -77,7 +74,6 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Container(
-                //width: MediaQuery.of(context).size.width/1.3,
                 alignment: Alignment.center,
                 child: Text(
                   _message,
@@ -98,7 +94,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (contex) => NotificationList()));
+                          builder: (context) => NotificationList()));
                 },
               ),
             ],
@@ -111,8 +107,8 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: NotificationListener<OverscrollIndicatorNotification>(
           onNotification: (OverscrollIndicatorNotification overscroll) {
-            overscroll.disallowGlow();
-            return;
+            overscroll.disallowIndicator();
+            return true;
           },
           child: ListView(
             physics: ClampingScrollPhysics(),
@@ -127,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                     alignment: Alignment.centerLeft,
                     padding: EdgeInsets.only(left: 20, bottom: 10),
                     child: Text(
-                      "Hello " + user.displayName,
+                      "Hello User", // Static user name
                       style: GoogleFonts.lato(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -167,14 +163,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                         suffixIcon: Container(
                           decoration: BoxDecoration(
-                            color: Colors.blue[900].withOpacity(0.9),
+                            color: Colors.blue[900]?.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: IconButton(
                             iconSize: 20,
                             splashRadius: 20,
                             color: Colors.white,
-                            icon: Icon(FlutterIcons.search1_ant),
+                            icon: Icon(Icons.search),
                             onPressed: () {},
                           ),
                         ),
@@ -186,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                       onFieldSubmitted: (String value) {
                         setState(
                           () {
-                            value.length == 0
+                            value.isEmpty
                                 ? Container()
                                 : Navigator.push(
                                     context,
@@ -238,7 +234,6 @@ class _HomePageState extends State<HomePage> {
                       padding: EdgeInsets.symmetric(horizontal: 20.0),
                       itemCount: cards.length,
                       itemBuilder: (context, index) {
-                        //print("images path: ${cards[index].cardImage.toString()}");
                         return Container(
                           margin: EdgeInsets.only(right: 14),
                           height: 150,
@@ -248,19 +243,13 @@ class _HomePageState extends State<HomePage> {
                               color: Color(cards[index].cardBackground),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey[400],
+                                  color: Colors.grey[400]!,
                                   blurRadius: 4.0,
                                   spreadRadius: 0.0,
                                   offset: Offset(3, 3),
                                 ),
-                              ]
-                              // image: DecorationImage(
-                              //   image: AssetImage(cards[index].cardImage),
-                              //   fit: BoxFit.fill,
-                              // ),
-                              ),
-                          // ignore: deprecated_member_use
-                          child: FlatButton(
+                              ]),
+                          child: TextButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -270,8 +259,11 @@ class _HomePageState extends State<HomePage> {
                                         )),
                               );
                             },
-                            shape: new RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(20)),
+                            style: TextButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

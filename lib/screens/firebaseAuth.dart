@@ -3,16 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:health_and_doctor_appointment/screens/register.dart';
 import 'package:health_and_doctor_appointment/screens/signIn.dart';
 
-class FireBaseAuth extends StatefulWidget {
+class AuthScreen extends StatefulWidget {
   @override
-  _FireBaseAuthState createState() => _FireBaseAuthState();
-
-  // void out2(BuildContext context) {
-  //   Navigator.pop(context);
-  // }
+  _AuthScreenState createState() => _AuthScreenState();
 }
 
-class _FireBaseAuthState extends State<FireBaseAuth> {
+class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,11 +85,10 @@ class _FireBaseAuthState extends State<FireBaseAuth> {
                               ),
                               onPressed: () => _pushPage(context, SignIn()),
                               style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.indigo[800],
                                 elevation: 2,
-                                primary: Colors.indigo[800],
-                                onPrimary: Colors.indigo[800],
+                                backgroundColor: Colors.indigo[800],
                                 shape: RoundedRectangleBorder(
-                                  
                                   borderRadius: BorderRadius.circular(32.0),
                                 ),
                               ),
@@ -118,11 +113,10 @@ class _FireBaseAuthState extends State<FireBaseAuth> {
                               ),
                               onPressed: () => _pushPage(context, Register()),
                               style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
                                 elevation: 2,
-                                primary: Colors.white,
-                                onPrimary: Colors.white,
+                                backgroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  
                                   borderRadius: BorderRadius.circular(32.0),
                                 ),
                               ),
@@ -131,30 +125,6 @@ class _FireBaseAuthState extends State<FireBaseAuth> {
                           padding: const EdgeInsets.all(16),
                           alignment: Alignment.center,
                         ),
-                        // Container(
-                        //   width: MediaQuery.of(context).size.width / 1.1,
-                        //   child: ButtonTheme(
-                        //     minWidth: double.infinity,
-                        //     height: 50.0,
-                        //     child: RaisedButton(
-                        //       color: Colors.indigo[800],
-                        //       child: Text(
-                        //         "Create an account",
-                        //         style: GoogleFonts.lato(
-                        //           color: Colors.white,
-                        //           fontSize: 18.0,
-                        //           fontWeight: FontWeight.bold,
-                        //         ),
-                        //       ),
-                        //       onPressed: () => _pushPage(context, Register()),
-                        //     ),
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: new BorderRadius.circular(25),
-                        //     ),
-                        //   ),
-                        //   padding: const EdgeInsets.all(16),
-                        //   alignment: Alignment.center,
-                        // ),
                       ],
                     ),
                   ),
@@ -166,7 +136,7 @@ class _FireBaseAuthState extends State<FireBaseAuth> {
             ),
           ),
         ],
-      ), //<--
+      ),
     );
   }
 

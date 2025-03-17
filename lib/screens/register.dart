@@ -1,8 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_and_doctor_appointment/screens/signIn.dart';
 
@@ -12,7 +8,6 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _displayName = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -20,17 +15,21 @@ class _RegisterState extends State<Register> {
   final TextEditingController _passwordConfirmController =
       TextEditingController();
 
-  FocusNode f1 = new FocusNode();
-  FocusNode f2 = new FocusNode();
-  FocusNode f3 = new FocusNode();
-  FocusNode f4 = new FocusNode();
-
-  bool _isSuccess;
+  FocusNode f1 = FocusNode();
+  FocusNode f2 = FocusNode();
+  FocusNode f3 = FocusNode();
+  FocusNode f4 = FocusNode();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _displayName.dispose();
+    _passwordConfirmController.dispose();
+    f1.dispose();
+    f2.dispose();
+    f3.dispose();
+    f4.dispose();
     super.dispose();
   }
 
@@ -42,8 +41,8 @@ class _RegisterState extends State<Register> {
         child: Center(
           child: NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (OverscrollIndicatorNotification overscroll) {
-              overscroll.disallowGlow();
-              return;
+              overscroll.disallowIndicator();
+              return true;
             },
             child: SingleChildScrollView(
               child: Column(
@@ -69,9 +68,7 @@ class _RegisterState extends State<Register> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             Container(
               padding: EdgeInsets.only(bottom: 50),
               child: Text(
@@ -111,13 +108,12 @@ class _RegisterState extends State<Register> {
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value.isEmpty) return 'Please enter the Name';
+                if (value == null || value.isEmpty)
+                  return 'Please enter the Name';
                 return null;
               },
             ),
-            SizedBox(
-              height: 25.0,
-            ),
+            SizedBox(height: 25.0),
             TextFormField(
               focusNode: f2,
               style: GoogleFonts.lato(
@@ -149,7 +145,7 @@ class _RegisterState extends State<Register> {
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value.isEmpty) {
+                if (value == null || value.isEmpty) {
                   return 'Please enter the Email';
                 } else if (!emailValidate(value)) {
                   return 'Please enter correct Email';
@@ -157,16 +153,13 @@ class _RegisterState extends State<Register> {
                 return null;
               },
             ),
-            SizedBox(
-              height: 25.0,
-            ),
+            SizedBox(height: 25.0),
             TextFormField(
               focusNode: f3,
               style: GoogleFonts.lato(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              //keyboardType: TextInputType.visiblePassword,
               controller: _passwordController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
@@ -191,7 +184,7 @@ class _RegisterState extends State<Register> {
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value.isEmpty) {
+                if (value == null || value.isEmpty) {
                   return 'Please enter the Password';
                 } else if (value.length < 8) {
                   return 'Password must be at least 8 characters long';
@@ -201,9 +194,7 @@ class _RegisterState extends State<Register> {
               },
               obscureText: true,
             ),
-            SizedBox(
-              height: 25.0,
-            ),
+            SizedBox(height: 25.0),
             TextFormField(
               focusNode: f4,
               style: GoogleFonts.lato(
@@ -231,7 +222,7 @@ class _RegisterState extends State<Register> {
               },
               textInputAction: TextInputAction.done,
               validator: (value) {
-                if (value.isEmpty) {
+                if (value == null || value.isEmpty) {
                   return 'Please enter the Password';
                 } else if (value.compareTo(_passwordController.text) != 0) {
                   return 'Password not Matching';
@@ -255,16 +246,20 @@ class _RegisterState extends State<Register> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  onPressed: () async {
-                    if (_formKey.currentState.validate()) {
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
                       showLoaderDialog(context);
-                      _registerAccount();
+                      Future.delayed(Duration(seconds: 2), () {
+                        Navigator.of(context).pop(); // Close the loader dialog
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/home', (Route<dynamic> route) => false);
+                      });
                     }
                   },
                   style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
                     elevation: 2,
-                    primary: Colors.indigo[900],
-                    onPrimary: Colors.black,
+                    backgroundColor: Colors.indigo[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32.0),
                     ),
@@ -290,22 +285,20 @@ class _RegisterState extends State<Register> {
                         borderRadius: BorderRadius.circular(32)),
                     child: IconButton(
                       icon: Icon(
-                        FlutterIcons.google_ant,
+                        Icons.g_mobiledata,
                         color: Colors.white,
                       ),
                       onPressed: () {},
                     ),
                   ),
-                  SizedBox(
-                    width: 30,
-                  ),
+                  SizedBox(width: 30),
                   Container(
                     decoration: BoxDecoration(
                         color: Colors.blue[900],
                         borderRadius: BorderRadius.circular(32)),
                     child: IconButton(
                       icon: Icon(
-                        FlutterIcons.facebook_f_faw,
+                        Icons.facebook,
                         color: Colors.white,
                       ),
                       onPressed: () {},
@@ -352,49 +345,9 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  showAlertDialog(BuildContext context) {
-    Navigator.pop(context);
-    // set up the button
-    Widget okButton = TextButton(
-      child: Text(
-        "OK",
-        style: GoogleFonts.lato(fontWeight: FontWeight.bold),
-      ),
-      onPressed: () {
-        Navigator.pop(context);
-        FocusScope.of(context).requestFocus(f2);
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text(
-        "Error!",
-        style: GoogleFonts.lato(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: Text(
-        "Email already Exists",
-        style: GoogleFonts.lato(),
-      ),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
   showLoaderDialog(BuildContext context) {
     AlertDialog alert = AlertDialog(
-      content: new Row(
+      content: Row(
         children: [
           CircularProgressIndicator(),
           Container(
@@ -418,49 +371,6 @@ class _RegisterState extends State<Register> {
       return true;
     } else {
       return false;
-    }
-  }
-
-  void _registerAccount() async {
-    User user;
-    UserCredential credential;
-
-    try {
-      credential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-    } catch (error) {
-      if (error.toString().compareTo(
-              '[firebase_auth/email-already-in-use] The email address is already in use by another account.') ==
-          0) {
-        showAlertDialog(context);
-        print(
-            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        print(user);
-      }
-    }
-    user = credential.user;
-
-    if (user != null) {
-      if (!user.emailVerified) {
-        await user.sendEmailVerification();
-      }
-      await user.updateProfile(displayName: _displayName.text);
-
-      FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'name': _displayName.text,
-        'birthDate': null,
-        'email': user.email,
-        'phone': null,
-        'bio': null,
-        'city': null,
-      }, SetOptions(merge: true));
-
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
-    } else {
-      _isSuccess = false;
     }
   }
 

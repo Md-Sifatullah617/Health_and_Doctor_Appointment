@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -10,22 +8,21 @@ class MyAppointmentList extends StatefulWidget {
 }
 
 class _MyAppointmentListState extends State<MyAppointmentList> {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
-  String _documentID;
-
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
-  }
-
-  Future<void> deleteAppointment(String docID) {
-    return FirebaseFirestore.instance
-        .collection('appointments')
-        .doc(user.email.toString())
-        .collection('pending')
-        .doc(docID)
-        .delete();
-  }
+  // Static data to replace Firebase data
+  final List<Map<String, dynamic>> appointments = [
+    {
+      'id': '1',
+      'doctor': 'Dr. Smith',
+      'date': DateTime.now().toString(),
+      'name': 'John Doe',
+    },
+    {
+      'id': '2',
+      'doctor': 'Dr. Jane',
+      'date': DateTime.now().add(Duration(days: 1)).toString(),
+      'name': 'Alice',
+    },
+  ];
 
   String _dateFormatter(String _timestamp) {
     String formattedDate =
@@ -39,7 +36,7 @@ class _MyAppointmentListState extends State<MyAppointmentList> {
     return formattedTime;
   }
 
-  showAlertDialog(BuildContext context) {
+  showAlertDialog(BuildContext context, String docID) {
     // set up the buttons
     Widget cancelButton = TextButton(
       child: Text("No"),
@@ -50,7 +47,9 @@ class _MyAppointmentListState extends State<MyAppointmentList> {
     Widget continueButton = TextButton(
       child: Text("Yes"),
       onPressed: () {
-        deleteAppointment(_documentID);
+        setState(() {
+          appointments.removeWhere((appointment) => appointment['id'] == docID);
+        });
         Navigator.of(context).pop();
       },
     );
@@ -74,15 +73,6 @@ class _MyAppointmentListState extends State<MyAppointmentList> {
     );
   }
 
-  _checkDiff(DateTime _date) {
-    var diff = DateTime.now().difference(_date).inHours;
-    if (diff > 2) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   _compareDate(String _date) {
     if (_dateFormatter(DateTime.now().toString())
             .compareTo(_dateFormatter(_date)) ==
@@ -94,146 +84,114 @@ class _MyAppointmentListState extends State<MyAppointmentList> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _getUser();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('appointments')
-            .doc(user.email.toString())
-            .collection('pending')
-            .orderBy('date')
-            .snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          return snapshot.data.size == 0
-              ? Center(
-                  child: Text(
-                    'No Appointment Scheduled',
-                    style: GoogleFonts.lato(
-                      color: Colors.grey,
-                      fontSize: 18,
-                    ),
-                  ),
-                )
-              : ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  physics: ClampingScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: snapshot.data.size,
-                  itemBuilder: (context, index) {
-                    DocumentSnapshot document = snapshot.data.docs[index];
-                    print(_compareDate(document['date'].toDate().toString()));
-                    if (_checkDiff(document['date'].toDate())) {
-                      deleteAppointment(document.id);
-                    }
-                    return Card(
-                      elevation: 2,
-                      child: InkWell(
-                        onTap: () {},
-                        child: ExpansionTile(
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 5),
-                                child: Text(
-                                  document['doctor'],
-                                  style: GoogleFonts.lato(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                _compareDate(
-                                        document['date'].toDate().toString())
-                                    ? "TODAY"
-                                    : "",
-                                style: GoogleFonts.lato(
-                                    color: Colors.green,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(
-                                width: 0,
-                              ),
-                            ],
-                          ),
-                          subtitle: Padding(
+      child: appointments.isEmpty
+          ? Center(
+              child: Text(
+                'No Appointment Scheduled',
+                style: GoogleFonts.lato(
+                  color: Colors.grey,
+                  fontSize: 18,
+                ),
+              ),
+            )
+          : ListView.builder(
+              scrollDirection: Axis.vertical,
+              physics: ClampingScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: appointments.length,
+              itemBuilder: (context, index) {
+                var appointment = appointments[index];
+                return Card(
+                  elevation: 2,
+                  child: InkWell(
+                    onTap: () {},
+                    child: ExpansionTile(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
                             padding: const EdgeInsets.only(left: 5),
                             child: Text(
-                              _dateFormatter(
-                                  document['date'].toDate().toString()),
-                              style: GoogleFonts.lato(),
+                              appointment['doctor'] ?? '',
+                              style: GoogleFonts.lato(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: 20, right: 10, left: 16),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                          Text(
+                            _compareDate(appointment['date'] ?? '')
+                                ? "TODAY"
+                                : "",
+                            style: GoogleFonts.lato(
+                                color: Colors.green,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(
+                            width: 0,
+                          ),
+                        ],
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Text(
+                          _dateFormatter(appointment['date'] ?? ''),
+                          style: GoogleFonts.lato(),
+                        ),
+                      ),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              bottom: 20, right: 10, left: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Patient name: " + document['name'],
-                                        style: GoogleFonts.lato(
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Text(
-                                        "Time: " +
-                                            _timeFormatter(
-                                              document['date']
-                                                  .toDate()
-                                                  .toString(),
-                                            ),
-                                        style: GoogleFonts.lato(
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  IconButton(
-                                    tooltip: 'Delete Appointment',
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: Colors.black87,
+                                  Text(
+                                    "Patient name: " +
+                                        (appointment['name'] ?? ''),
+                                    style: GoogleFonts.lato(
+                                      fontSize: 16,
                                     ),
-                                    onPressed: () {
-                                      print(">>>>>>>>>" + document.id);
-                                      _documentID = document.id;
-                                      showAlertDialog(context);
-                                    },
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    "Time: " +
+                                        _timeFormatter(
+                                          appointment['date'] ?? '',
+                                        ),
+                                    style: GoogleFonts.lato(
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              IconButton(
+                                tooltip: 'Delete Appointment',
+                                icon: Icon(
+                                  Icons.delete,
+                                  color: Colors.black87,
+                                ),
+                                onPressed: () {
+                                  showAlertDialog(context, appointment['id']);
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      ],
+                    ),
+                  ),
                 );
-        },
-      ),
+              },
+            ),
     );
   }
 }

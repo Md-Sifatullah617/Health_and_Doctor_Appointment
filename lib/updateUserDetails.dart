@@ -1,12 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UpdateUserDetails extends StatefulWidget {
   final String label;
   final String field;
-  const UpdateUserDetails({Key key, this.label, this.field}) : super(key: key);
+
+  UpdateUserDetails({required this.label, required this.field});
 
   @override
   _UpdateUserDetailsState createState() => _UpdateUserDetailsState();
@@ -14,20 +13,11 @@ class UpdateUserDetails extends StatefulWidget {
 
 class _UpdateUserDetailsState extends State<UpdateUserDetails> {
   TextEditingController _textcontroller = TextEditingController();
-  FocusNode f1;
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
-  String UserID;
-
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
-    UserID = user.uid;
-  }
+  FocusNode? f1;
 
   @override
   void initState() {
     super.initState();
-    _getUser();
   }
 
   @override
@@ -61,33 +51,24 @@ class _UpdateUserDetailsState extends State<UpdateUserDetails> {
         padding: const EdgeInsets.fromLTRB(5, 20, 5, 0),
         child: Column(
           children: [
-            StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(UserID)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                var userData = snapshot.data;
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 15),
-                  child: TextFormField(
-                    controller: _textcontroller,
-                    style: GoogleFonts.lato(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    onFieldSubmitted: (String _data) {
-                      _textcontroller.text = _data;
-                    },
-                    textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      if (value.isEmpty)
-                        return 'Please Enter the ' + widget.label;
-                      return null;
-                    },
-                  ),
-                );
-              },
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 15),
+              child: TextFormField(
+                controller: _textcontroller,
+                style: GoogleFonts.lato(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                onFieldSubmitted: (String _data) {
+                  _textcontroller.text = _data;
+                },
+                textInputAction: TextInputAction.done,
+                validator: (value) {
+                  if (value?.isEmpty ?? true)
+                    return 'Please Enter the ' + widget.label;
+                  return null;
+                },
+              ),
             ),
             SizedBox(
               height: 50,
@@ -99,12 +80,11 @@ class _UpdateUserDetailsState extends State<UpdateUserDetails> {
               child: ElevatedButton(
                 onPressed: () {
                   FocusScope.of(context).unfocus();
-                  updateData();
                 },
                 style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.black,
                   elevation: 2,
-                  primary: Colors.indigo.withOpacity(0.9),
-                  onPrimary: Colors.black,
+                  backgroundColor: Colors.indigo.withOpacity(0.9),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32.0),
                   ),
@@ -122,16 +102,5 @@ class _UpdateUserDetailsState extends State<UpdateUserDetails> {
         ),
       ),
     );
-  }
-
-  Future<void> updateData() async {
-    FirebaseFirestore.instance.collection('users').doc(UserID).set({
-      widget.field: _textcontroller.text,
-    }, SetOptions(merge: true));
-    if (widget.field.compareTo('name') == 0) {
-      await user.updateProfile(displayName: _textcontroller.text);
-    }
-    if (widget.field.compareTo('phone') == 0) {
-    }
   }
 }

@@ -1,17 +1,11 @@
-import 'dart:async';
-import 'dart:ui';
-import 'package:health_and_doctor_appointment/firestore-data/searchList.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:health_and_doctor_appointment/screens/doctorsList.dart';
 import 'package:health_and_doctor_appointment/screens/homePage.dart';
 import 'package:health_and_doctor_appointment/screens/myAppointments.dart';
 import 'package:health_and_doctor_appointment/screens/userProfile.dart';
-import 'package:health_and_doctor_appointment/screens/doctorsList.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:typicons_flutter/typicons_flutter.dart';
-import 'package:quick_actions/quick_actions.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -29,23 +23,11 @@ class _MainPageState extends State<MainPage> {
     UserProfile(),
   ];
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
-
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
-  }
-
-  _navigate(Widget screen) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
-  }
-
   String shortcut = "no action set";
 
   @override
   void initState() {
     super.initState();
-    _getUser();
   }
 
   void _onItemTapped(int index) {
@@ -82,8 +64,8 @@ class _MainPageState extends State<MainPage> {
                   const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
               child: GNav(
                 curve: Curves.easeOutExpo,
-                rippleColor: Colors.grey[300],
-                hoverColor: Colors.grey[100],
+                rippleColor: Colors.grey[300]!,
+                hoverColor: Colors.grey[100]!,
                 haptic: true,
                 tabBorderRadius: 20,
                 gap: 5,
@@ -98,12 +80,14 @@ class _MainPageState extends State<MainPage> {
                   GButton(
                     iconSize: _selectedIndex != 0 ? 28 : 25,
                     icon: _selectedIndex == 0
-                        ? FlutterIcons.home_fou
-                        : FlutterIcons.home_variant_outline_mco,
+                        ? Typicons.home
+                        : Typicons.home_outline,
                     text: 'Home',
                   ),
                   GButton(
-                    icon: FlutterIcons.search1_ant,
+                    icon: _selectedIndex == 1
+                        ? Icons.search
+                        : Icons.search_outlined,
                     text: 'Search',
                   ),
                   GButton(

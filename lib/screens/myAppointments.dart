@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_and_doctor_appointment/firestore-data/myAppointmentList.dart';
@@ -10,17 +8,12 @@ class MyAppointments extends StatefulWidget {
 }
 
 class _MyAppointmentsState extends State<MyAppointments> {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
-
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
-  }
+  // Removed FirebaseAuth and User
 
   @override
   void initState() {
     super.initState();
-    _getUser();
+    // Removed _getUser() call
   }
 
   @override
@@ -44,7 +37,8 @@ class _MyAppointmentsState extends State<MyAppointments> {
       ),
       body: Container(
         padding: EdgeInsets.only(right: 10, left: 10, top: 10),
-        child: MyAppointmentList(),
+        child:
+            MyAppointmentList(), // Assuming MyAppointmentList uses static data
       ),
     );
   }

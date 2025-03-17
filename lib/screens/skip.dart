@@ -1,6 +1,3 @@
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:introduction_screen/introduction_screen.dart';
@@ -113,7 +110,7 @@ class _SkipState extends State<Skip> {
             elevation: 5,
           ),
         ),
-        onDone: () => _pushPage(context, FireBaseAuth()),
+        onDone: () => _pushPage(context, AuthScreen()),
       ),
     );
   }

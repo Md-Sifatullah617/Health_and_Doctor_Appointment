@@ -1,10 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_and_doctor_appointment/screens/register.dart';
-
-import '../mainPage.dart';
 
 class SignIn extends StatefulWidget {
   @override
@@ -12,15 +8,14 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _passwordController = TextEditingController();
 
-  FocusNode f1 = new FocusNode();
-  FocusNode f2 = new FocusNode();
-  FocusNode f3 = new FocusNode();
+  FocusNode f1 = FocusNode();
+  FocusNode f2 = FocusNode();
+  FocusNode f3 = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +26,8 @@ class _SignInState extends State<SignIn> {
         return SafeArea(
           child: NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (OverscrollIndicatorNotification overscroll) {
-              overscroll.disallowGlow();
-              return;
+              overscroll.disallowIndicator();
+              return true;
             },
             child: SingleChildScrollView(
               child: Column(
@@ -109,7 +104,7 @@ class _SignInState extends State<SignIn> {
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value.isEmpty) {
+                if (value == null || value.isEmpty) {
                   return 'Please enter the Email';
                 } else if (!emailValidate(value)) {
                   return 'Please enter correct Email';
@@ -127,7 +122,6 @@ class _SignInState extends State<SignIn> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              //keyboardType: TextInputType.visiblePassword,
               controller: _passwordController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
@@ -150,7 +144,8 @@ class _SignInState extends State<SignIn> {
               },
               textInputAction: TextInputAction.done,
               validator: (value) {
-                if (value.isEmpty) return 'Please enter the Passord';
+                if (value == null || value.isEmpty)
+                  return 'Please enter the Password';
                 return null;
               },
               obscureText: true,
@@ -170,16 +165,21 @@ class _SignInState extends State<SignIn> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  onPressed: () async {
-                    if (_formKey.currentState.validate()) {
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
                       showLoaderDialog(context);
-                      _signInWithEmailAndPassword();
+                      // Simulate a sign-in delay
+                      Future.delayed(Duration(seconds: 2), () {
+                        Navigator.pop(context); // Close the loader dialog
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/home', (Route<dynamic> route) => false);
+                      });
                     }
                   },
                   style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
                     elevation: 2,
-                    primary: Colors.indigo[900],
-                    onPrimary: Colors.black,
+                    backgroundColor: Colors.indigo[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32.0),
                     ),
@@ -215,7 +215,7 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(32)),
                     child: IconButton(
                       icon: Icon(
-                        FlutterIcons.google_ant,
+                        Icons.g_mobiledata,
                         color: Colors.white,
                       ),
                       onPressed: () {},
@@ -230,7 +230,7 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(32)),
                     child: IconButton(
                       icon: Icon(
-                        FlutterIcons.facebook_f_faw,
+                        Icons.facebook,
                         color: Colors.white,
                       ),
                       onPressed: () {},
@@ -286,7 +286,7 @@ class _SignInState extends State<SignIn> {
 
   showLoaderDialog(BuildContext context) {
     AlertDialog alert = AlertDialog(
-      content: new Row(
+      content: Row(
         children: [
           CircularProgressIndicator(),
           Container(
@@ -310,35 +310,6 @@ class _SignInState extends State<SignIn> {
       return true;
     } else {
       return false;
-    }
-  }
-
-  void _signInWithEmailAndPassword() async {
-    try {
-      final User user = (await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      ))
-          .user;
-      if (!user.emailVerified) {
-        await user.sendEmailVerification();
-      }
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
-    } catch (e) {
-      final snackBar = SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: Colors.white,
-            ),
-            Text(" There was a problem signing you in"),
-          ],
-        ),
-      );
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 

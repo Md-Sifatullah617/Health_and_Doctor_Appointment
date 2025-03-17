@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_and_doctor_appointment/firestore-data/userDetails.dart';
@@ -11,21 +10,12 @@ class UserSettings extends StatefulWidget {
 class _UserSettingsState extends State<UserSettings> {
   UserDetails detail = new UserDetails();
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
-
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
-  }
-
-  Future _signOut() async {
-    await _auth.signOut();
-  }
+  // Removed Firebase-related code
 
   @override
   void initState() {
     super.initState();
-    _getUser();
+    // Removed _getUser call
   }
 
   @override
@@ -67,9 +57,9 @@ class _UserSettingsState extends State<UserSettings> {
               onPressed: () {
                 Navigator.of(context).pushNamedAndRemoveUntil(
                     '/login', (Route<dynamic> route) => false);
-                _signOut();
+                // Removed _signOut call
               },
-              style: TextButton.styleFrom(primary: Colors.grey),
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
               child: Text(
                 'Sign out',
                 style: GoogleFonts.lato(

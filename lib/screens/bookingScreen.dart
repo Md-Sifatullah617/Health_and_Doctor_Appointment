@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_and_doctor_appointment/screens/myAppointments.dart';
@@ -8,7 +6,7 @@ import 'package:intl/intl.dart';
 class BookingScreen extends StatefulWidget {
   final String doctor;
 
-  const BookingScreen({Key key, this.doctor}) : super(key: key);
+  BookingScreen({required this.doctor});
   @override
   _BookingScreenState createState() => _BookingScreenState();
 }
@@ -29,17 +27,17 @@ class _BookingScreenState extends State<BookingScreen> {
   FocusNode f5 = FocusNode();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  DateTime selectedDate = DateTime.now();
-  TimeOfDay currentTime = TimeOfDay.now();
+  DateTime? selectedDate = DateTime.now();
+  TimeOfDay? currentTime = TimeOfDay.now();
   String timeText = 'Select Time';
-  String dateUTC;
-  String date_Time;
+  String? dateUTC;
+  String? date_Time;
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  User user;
-
-  Future<void> _getUser() async {
-    user = _auth.currentUser;
+  @override
+  void initState() {
+    super.initState();
+    selectTime(context);
+    _doctorController.text = widget.doctor;
   }
 
   Future<void> selectDate(BuildContext context) async {
@@ -52,11 +50,13 @@ class _BookingScreenState extends State<BookingScreen> {
       (date) {
         setState(
           () {
-            selectedDate = date;
-            String formattedDate =
-                DateFormat('dd-MM-yyyy').format(selectedDate);
-            _dateController.text = formattedDate;
-            dateUTC = DateFormat('yyyy-MM-dd').format(selectedDate);
+            if (date != null) {
+              selectedDate = date;
+              String formattedDate =
+                  DateFormat('dd-MM-yyyy').format(selectedDate!);
+              _dateController.text = formattedDate;
+              dateUTC = DateFormat('yyyy-MM-dd').format(selectedDate!);
+            }
           },
         );
       },
@@ -64,22 +64,22 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> selectTime(BuildContext context) async {
-    TimeOfDay selectedTime = await showTimePicker(
+    TimeOfDay? selectedTime = await showTimePicker(
       context: context,
-      initialTime: currentTime,
+      initialTime: currentTime!,
     );
 
-    MaterialLocalizations localizations = MaterialLocalizations.of(context);
-    String formattedTime = localizations.formatTimeOfDay(selectedTime,
-        alwaysUse24HourFormat: false);
+    if (selectedTime != null) {
+      MaterialLocalizations localizations = MaterialLocalizations.of(context);
+      String formattedTime = localizations.formatTimeOfDay(selectedTime,
+          alwaysUse24HourFormat: false);
 
-    if (formattedTime != null) {
       setState(() {
         timeText = formattedTime;
         _timeController.text = timeText;
       });
+      date_Time = selectedTime.toString().substring(10, 15);
     }
-    date_Time = selectedTime.toString().substring(10, 15);
   }
 
   showAlertDialog(BuildContext context) {
@@ -126,14 +126,6 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _getUser();
-    selectTime(context);
-    _doctorController.text = widget.doctor;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -156,8 +148,8 @@ class _BookingScreenState extends State<BookingScreen> {
       body: SafeArea(
         child: NotificationListener<OverscrollIndicatorNotification>(
           onNotification: (OverscrollIndicatorNotification overscroll) {
-            overscroll.disallowGlow();
-            return;
+            overscroll.disallowIndicator();
+            return true;
           },
           child: ListView(
             shrinkWrap: true,
@@ -197,7 +189,8 @@ class _BookingScreenState extends State<BookingScreen> {
                         controller: _nameController,
                         focusNode: f1,
                         validator: (value) {
-                          if (value.isEmpty) return 'Please Enter Patient Name';
+                          if (value!.isEmpty)
+                            return 'Please Enter Patient Name';
                           return null;
                         },
                         style: GoogleFonts.lato(
@@ -252,7 +245,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value.isEmpty) {
+                          if (value!.isEmpty) {
                             return 'Please Enter Phone number';
                           } else if (value.length < 10) {
                             return 'Please Enter correct Phone number';
@@ -304,7 +297,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       TextFormField(
                         controller: _doctorController,
                         validator: (value) {
-                          if (value.isEmpty) return 'Please enter Doctor name';
+                          if (value!.isEmpty) return 'Please enter Doctor name';
                           return null;
                         },
                         style: GoogleFonts.lato(
@@ -361,7 +354,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               ),
                               controller: _dateController,
                               validator: (value) {
-                                if (value.isEmpty)
+                                if (value!.isEmpty)
                                   return 'Please Enter the Date';
                                 return null;
                               },
@@ -432,7 +425,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               ),
                               controller: _timeController,
                               validator: (value) {
-                                if (value.isEmpty)
+                                if (value!.isEmpty)
                                   return 'Please Enter the Time';
                                 return null;
                               },
@@ -476,20 +469,19 @@ class _BookingScreenState extends State<BookingScreen> {
                         width: MediaQuery.of(context).size.width,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black,
                             elevation: 2,
-                            primary: Colors.indigo,
-                            onPrimary: Colors.black,
+                            backgroundColor: Colors.indigo,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(32.0),
                             ),
                           ),
                           onPressed: () {
-                            if (_formKey.currentState.validate()) {
+                            if (_formKey.currentState!.validate()) {
                               print(_nameController.text);
                               print(_dateController.text);
                               print(widget.doctor);
                               showAlertDialog(context);
-                              _createAppointment();
                             }
                           },
                           child: Text(
@@ -514,34 +506,5 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _createAppointment() async {
-    print(dateUTC + ' ' + date_Time + ':00');
-    FirebaseFirestore.instance
-        .collection('appointments')
-        .doc(user.email)
-        .collection('pending')
-        .doc()
-        .set({
-      'name': _nameController.text,
-      'phone': _phoneController.text,
-      'description': _descriptionController.text,
-      'doctor': _doctorController.text,
-      'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
-    }, SetOptions(merge: true));
-
-    FirebaseFirestore.instance
-        .collection('appointments')
-        .doc(user.email)
-        .collection('all')
-        .doc()
-        .set({
-      'name': _nameController.text,
-      'phone': _phoneController.text,
-      'description': _descriptionController.text,
-      'doctor': _doctorController.text,
-      'date': DateTime.parse(dateUTC + ' ' + date_Time + ':00'),
-    }, SetOptions(merge: true));
   }
 }
